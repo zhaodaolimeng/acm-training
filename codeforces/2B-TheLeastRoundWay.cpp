@@ -15,20 +15,21 @@ using namespace std;
 #define CLEAR( a , x ) memset ( a , x , sizeof a )
 typedef long long LL;
 typedef pair<int,int>pil;
-const int INF=0x3f3f3f3f;
+const int INF=0x7fffffff;
 const int maxn=1010;
 int dp[maxn][maxn][2];
 int path[maxn][maxn][2];
 int mp[maxn][maxn][2];
 int n;
-void print(int i,int j)
-{
+
+void print(int i,int j) {
     if(i==1&&j==1)
         return ;
     print(path[i][j][0],path[i][j][1]);
     if(i-path[i][j][0]==1&&j==path[i][j][1]) printf("%c",'D');
     else printf("%c",'R');
 }
+
 int main()
 {
     int x,cnt1,cnt2,temp;
@@ -78,7 +79,6 @@ int main()
         }
         printf("%d\n",min(dp[n][n][0],dp[n][n][1]));
         print(n,n);
-//        puts("");
     }
     return 0;
 }
