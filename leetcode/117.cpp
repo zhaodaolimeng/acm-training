@@ -34,33 +34,28 @@ public:
 class Solution {
 public:
     Node* connect(Node* root) {
+        if(root == NULL) return root;
+        Node* head = root, *p, *h, *t;
 
-        Node* h = root, *p, *t; 
-        // h是每一层的第一个，p记录“搭桥”的位置，t记录“桥头”
+        while(head->left != NULL || head->right != NULL || head->next != NULL){
 
-        while(h->left != NULL || h->right != NULL || h->next != NULL){
-            
-            for(p = h; p->next != NULL; p = p->next){
-                cout<<p->val<<endl;
-                if(p->left != NULL || p->right != NULL){
-                    if(p->left != NULL && p->right != NULL)
-                        p->left->next = p->right;
-                    if(p->right != NULL)
-                        t = p->right;
-                    else if(p->left != NULL) t = p->left;
-                    else continue;
+            for(p = head, t = NULL; p != NULL; p = p->next){
+                if(p->left != NULL && p->right != NULL) p->left->next = p->right;
+
+                if(t != NULL){
+                    if(p->left != NULL) t->next = p->left;
+                    else if(p->right != NULL) t->next = p->right;
                 }
-                if(p->next->left != NULL)
-                    t->next = p->next->left;
-                else {
-                    if(p->next->right != NULL)
-                        t->next = p->next->right;
-                    else t->next = NULL;
-                }
+
+                if(p->left != NULL && p->left->next == NULL)
+                    t = p->left;
+                if(p->right != NULL && p->right->next == NULL)
+                    t = p->right;
             }
-            if(h->left != NULL) h = h->left;
-            else if(h->right != NULL) h = h->right;
-            else h = h->next;
+
+            if(head->left != NULL) head = head->left;
+            else if(head->right != NULL) head = head->right;
+            else head = head->next;
         }
         return root;
     }
@@ -70,12 +65,29 @@ int main(){
 
     Solution sl;
 
-    Node* na[7];
-    na[6] = Node(7, NULL, NULL, NULL);
-    na[5] = Node(3, NULL, na[6], NULL);
-    na[3] = Node(4, NULL, NULL, NULL);
-    na[4] = Node(5, NULL, NULL, NULL);
-    na[2] = Node(2, na[3], na[4], NULL);
-    na[1] = Node(1, na[2], na[5], NULL);
+    // Node* na[7];
+    // na[6] = new Node(6, NULL, NULL, NULL);
+    // na[5] = new Node(5, NULL, na[6], NULL);
+    // na[3] = new Node(3, NULL, NULL, NULL);
+    // na[4] = new Node(4, NULL, NULL, NULL);
+    // na[2] = new Node(2, na[3], na[4], NULL);
+    // na[1] = new Node(1, na[2], na[5], NULL);
+
+    Node* na[8];
+    na[7] = new Node(7, NULL, NULL, NULL);
+    na[6] = new Node(6, NULL, NULL, NULL);
+    na[5] = new Node(5, na[7], NULL, NULL);
+    na[3] = new Node(3, NULL, na[5], NULL);
+    na[4] = new Node(4, na[6], NULL, NULL);
+    na[2] = new Node(2, NULL, na[4], NULL);
+    na[1] = new Node(1, na[2], na[3], NULL);
+
+    cout<<"init"<<endl;
     sl.connect(na[1]);
+    cout<<"======================"<<endl;
+    for(int i=1; i<sizeof(na)/sizeof(na[0]); i++){
+        cout<<i<<" ";
+        if(na[i]->next == NULL) cout<<"NULL"<<endl;
+        else cout<<na[i]->next->val<<endl;
+    }
 }
