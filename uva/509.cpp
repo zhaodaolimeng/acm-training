@@ -45,7 +45,7 @@ string fix(){
     if(extra_zero == 4) extra_zero = 0;
     for(int i=0; i<extra_zero; i++) binary += '0';
 
-    cout<<binary<<endl;
+    // cout<<binary<<endl;
     for(int i=0; i<binary.size(); i++){
         hex = (hex<<1) + (binary[i] - '0');
         if(i % 4 == 3){
@@ -89,6 +89,10 @@ O
 11111
 11xxx
 x1111
+2 2 3
+E
+101100
+101100
 0
 
 Disk set 1 is valid, contents are: 6C7A79EDFC
