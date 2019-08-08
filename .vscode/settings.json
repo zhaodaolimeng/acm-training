@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "ostream": "cpp",
+        "__locale": "cpp",
+        "vector": "cpp",
+        "utility": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "unordered_set": "cpp",
+        "set": "cpp"
+    }
+}

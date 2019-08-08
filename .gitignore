@@ -1,6 +1,5 @@
 a.out
 a.out.dSYM/*
-.vscode/*
 cmake-build-debug/
 *.exe
 .idea/
