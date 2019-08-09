@@ -3,3 +3,4 @@ a.out.dSYM/*
 cmake-build-debug/
 *.exe
 .idea/
+.vscode/
