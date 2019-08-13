@@ -4,5 +4,5 @@ cmake-build-debug/
 *.exe
 .idea/
 .vscode/
-uva/input.txt
-uva/output.txt
+*/input.txt
+*/output.txt
