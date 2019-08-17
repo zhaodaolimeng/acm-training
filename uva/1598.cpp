@@ -9,8 +9,8 @@ const bool DEBUG = true;
 priority_queue<int> buy_pq;  // p, (q, id)
 priority_queue<int, vector<int>, greater<int>> sell_pq;
 
-set<int> buy_pq_deleted;
-set<int> sell_pq_deleted;
+// set<int> buy_pq_deleted;
+// set<int> sell_pq_deleted;
 
 // CAN BE IMPROVED
 // map<int, set<int>> buy_trans_deleted;
@@ -61,21 +61,16 @@ void print_sell_trans(){
     cout<<"-----"<<endl;
 }
 
-void print_buy_pq_deleted(){
-    cout<<"buy_pq_deleted: ";
-    for(int i : buy_pq_deleted) cout<<i<<" ";
-    cout<<endl;
-}
-
-void print_sell_pq_deleted(){
-    cout<<"sell_pq_deleted: ";
-    for(int i : sell_pq_deleted) cout<<i<<" ";
-    cout<<endl;
-}
-
 void print_buy_trans_cnt(){
     cout<<"buy_trans_cnt: ";
     for(auto const & e : buy_trans_cnt)
+        cout<<"("<<e.first<<","<<e.second<<"),";
+    cout<<endl;
+}
+
+void print_sell_trans_cnt(){
+    cout<<"sell_trans_cnt: ";
+    for(auto const & e : sell_trans_cnt)
         cout<<"("<<e.first<<","<<e.second<<"),";
     cout<<endl;
 }
@@ -104,10 +99,9 @@ void update_pq(
 void clean_sell_pq(){
     while(!sell_pq.empty()){
         int deleted_ele = sell_pq.top();
-        if(sell_pq_deleted.find(deleted_ele) != sell_pq_deleted.end()){
+        if(sell_trans.find(deleted_ele) == sell_trans.end()){
             sell_pq.pop();
             sell_trans_cnt.erase(deleted_ele);
-            sell_pq_deleted.erase(deleted_ele);
         }else break;
     }
 }
@@ -115,10 +109,9 @@ void clean_sell_pq(){
 void clean_buy_pq(){
     while(!buy_pq.empty()){
         int deleted_ele = buy_pq.top();
-        if(buy_pq_deleted.find(deleted_ele) != buy_pq_deleted.end()){
+        if(buy_trans.find(deleted_ele) == buy_trans.end()){
             buy_pq.pop();
             buy_trans_cnt.erase(deleted_ele);
-            buy_pq_deleted.erase(deleted_ele);
         }else break;
     }
 }
@@ -129,6 +122,7 @@ void process_buy(int price, int quant, int index){
         clean_sell_pq();
         if(sell_pq.empty()) break;
         int min_sell_price = sell_pq.top();
+        // if(DEBUG) print_sell_trans_cnt();
         if(min_sell_price > price) break;
         queue<pair<int,int>> &qp = sell_trans[min_sell_price];
 
@@ -153,7 +147,6 @@ void process_buy(int price, int quant, int index){
             sell_pq.pop();
             sell_trans.erase(min_sell_price);
             sell_trans_cnt.erase(min_sell_price);
-            sell_pq_deleted.erase(min_sell_price);
         }
     }
     if(quant > 0){
@@ -168,8 +161,7 @@ void process_sell(int price, int quant, int index){
         clean_buy_pq();
         if(buy_pq.empty()) break;
         int max_buy_price = buy_pq.top();
-        cout<<"333333 "<<max_buy_price<<endl;
-        print_buy_trans_cnt();
+        // if(DEBUG) print_buy_trans_cnt();
         if(max_buy_price < price) break;
         queue<pair<int,int>> &qp = buy_trans[max_buy_price];
         while(!qp.empty() && !done){
@@ -177,7 +169,6 @@ void process_sell(int price, int quant, int index){
             if(buy_p.first >= quant){
                 buy_p.first -= quant;
                 buy_trans_cnt[max_buy_price] -= quant;
-                cout<<"***"<<buy_trans_cnt[max_buy_price]<<endl;
                 printf("TRADE %d %d\n", quant, max_buy_price);
                 if(buy_p.first == 0) qp.pop();
                 quant = 0;
@@ -194,7 +185,6 @@ void process_sell(int price, int quant, int index){
             buy_pq.pop();
             buy_trans.erase(max_buy_price);
             buy_trans_cnt.erase(max_buy_price);
-            buy_pq_deleted.erase(max_buy_price);
         }
     }
     if(quant > 0){
@@ -213,7 +203,6 @@ void process_cancel(int index){
             buy_id_p.erase(buy_id);
             buy_trans.erase(price);
             buy_trans_cnt.erase(price);
-            buy_pq_deleted.insert(price);
         }else{
             for(int qi=0; qi<queue_size; qi++){
                 pair<int,int> buy_p = qp.front();
@@ -233,7 +222,6 @@ void process_cancel(int index){
             sell_id_p.erase(sell_id);
             sell_trans.erase(price);
             sell_trans_cnt.erase(price);
-            sell_pq_deleted.insert(price);
         }else{
             for(int qi=0; qi<queue_size; qi++){
                 pair<int,int> sell_p = qp.front();
@@ -255,44 +243,57 @@ int main(){
     int n, q, p, t;
     string cmd;
 
-    cin>>n;
-    for(int i=1; i<=n; i++){
-        cin>>cmd;
-        if(cmd == "BUY"){
-            cin>>q>>p;
-            if(DEBUG) printf("BUY %d %d\n", q, p);
-            process_buy(p, q, i);
-        }else if(cmd == "SELL"){
-            cin>>q>>p;
-            if(DEBUG) printf("SELL %d %d\n", q, p);
-            process_sell(p, q, i);
-        }else{
-            cin>>t;
-            if(DEBUG) printf("CANCEL %d\n", t);
-            process_cancel(t);
-        }
-        int buy_price = 0, buy_quant = 0;
-        int sell_price = 99999, sell_quant = 0;
-        clean_buy_pq();
-        if(!buy_pq.empty()){
-            buy_price = buy_pq.top();
-            buy_quant = buy_trans_cnt[buy_price];
-        }
-        clean_sell_pq();
-        if(!sell_pq.empty()){
-            sell_price = sell_pq.top();
-            sell_quant = sell_trans_cnt[sell_price];
-        }
+    while(cin>>n){
+        buy_pq = priority_queue <int>();
+        sell_pq = priority_queue<int, vector<int>, greater<int>>();
 
+        buy_trans.clear();
+        sell_trans.clear();
+
+        buy_id_p.clear();
+        sell_id_p.clear();
+
+        buy_trans_cnt.clear();  // quota
+        sell_trans_cnt.clear();
+
+        for(int i=1; i<=n; i++){
+            cin>>cmd;
+            if(cmd == "BUY"){
+                cin>>q>>p;
+                // printf("BUY %d %d ", q, p);
+                if(DEBUG) printf("BUY %d %d\n", q, p);
+                process_buy(p, q, i);
+            }else if(cmd == "SELL"){
+                cin>>q>>p;
+                // printf("SELL %d %d ", q, p);
+                if(DEBUG) printf("SELL %d %d\n", q, p);
+                process_sell(p, q, i);
+            }else{
+                cin>>t;
+                // printf("CANCEL %d", t);
+                if(DEBUG) printf("CANCEL %d\n", t);
+                process_cancel(t);
+            }
+            int buy_price = 0, buy_quant = 0;
+            int sell_price = 99999, sell_quant = 0;
+            clean_buy_pq();
+            if(!buy_pq.empty()){
+                buy_price = buy_pq.top();
+                buy_quant = buy_trans_cnt[buy_price];
+            }
+            clean_sell_pq();
+            if(!sell_pq.empty()){
+                sell_price = sell_pq.top();
+                sell_quant = sell_trans_cnt[sell_price];
+            }
+            // cout<<n<<" ";
+            printf("QUOTE %d %d - %d %d\n", buy_quant, buy_price, sell_quant, sell_price);
+        }
         if(DEBUG) print_buy_trans();
         if(DEBUG) print_sell_trans();
 
-        if(DEBUG) print_buy_pq_deleted();
-        if(DEBUG) print_sell_pq_deleted();
-
         if(DEBUG) print_buy_trans_cnt();
-        
-        printf("QUOTE %d %d - %d %d\n", buy_quant, buy_price, sell_quant, sell_price);
-        if(DEBUG) cout<<"=========="<<endl;
+        if(DEBUG) print_sell_trans_cnt();
+        cout<<endl;
     }
 }
