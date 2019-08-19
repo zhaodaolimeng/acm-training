@@ -2,8 +2,8 @@
 using namespace std;
 
 
-// const bool DEBUG = false;
-const bool DEBUG = true;
+const bool DEBUG = false;
+// const bool DEBUG = true;
 
 
 priority_queue<int> buy_pq;  // p, (q, id)
@@ -132,7 +132,10 @@ void process_buy(int price, int quant, int index){
                 sell_p.first -= quant;
                 sell_trans_cnt[min_sell_price] -= quant;
                 printf("TRADE %d %d\n", quant, min_sell_price);
-                if(sell_p.first == 0) qp.pop();
+                if(sell_p.first == 0) {
+                    qp.pop();
+                    sell_id_p.erase(sell_p.second);
+                }
                 quant = 0;
                 done = true;
             }else{
@@ -170,7 +173,10 @@ void process_sell(int price, int quant, int index){
                 buy_p.first -= quant;
                 buy_trans_cnt[max_buy_price] -= quant;
                 printf("TRADE %d %d\n", quant, max_buy_price);
-                if(buy_p.first == 0) qp.pop();
+                if(buy_p.first == 0) {
+                    buy_id_p.erase(buy_p.second);
+                    qp.pop();
+                }
                 quant = 0;
                 done = true;
             }else{
@@ -237,13 +243,18 @@ void process_cancel(int index){
 
 
 int main(){
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    // freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
 
     int n, q, p, t;
     string cmd;
 
+    bool first_line = true;
+
     while(cin>>n){
+        if(!first_line) cout<<endl;
+        else first_line = false;
+
         buy_pq = priority_queue <int>();
         sell_pq = priority_queue<int, vector<int>, greater<int>>();
 
@@ -288,12 +299,13 @@ int main(){
             }
             // cout<<n<<" ";
             printf("QUOTE %d %d - %d %d\n", buy_quant, buy_price, sell_quant, sell_price);
-        }
-        if(DEBUG) print_buy_trans();
-        if(DEBUG) print_sell_trans();
 
-        if(DEBUG) print_buy_trans_cnt();
-        if(DEBUG) print_sell_trans_cnt();
-        cout<<endl;
+            if(i >= n-1){
+                if(DEBUG) print_buy_trans();
+                if(DEBUG) print_sell_trans();
+                if(DEBUG) print_buy_trans_cnt();
+                if(DEBUG) print_sell_trans_cnt();
+            }
+        }
     }
 }
