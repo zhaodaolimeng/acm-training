@@ -2,111 +2,84 @@
 
 using namespace std;
 
-struct BigInteger {
-    static const int BASE = 100000000;
-    static const int WIDTH = 8;
-    vector<int> s;
 
-    BigInteger(long long num=0){
-        *this = num;
+// 直接参考了这份报告：http://acm.zzkun.com/archives/21
+
+const int max_f = 100000;
+
+int F[2][7*max_f];
+// 这只是Fib数列的存储，真正打的表直接存储于Trie树中。F[2]是一个滚动。
+// 如果采用十进制的话，总的数据量应该为比max_f多6个数量级以上。
+char Fib[50], In[50];  
+
+// Trie树
+struct Node{
+    int id;
+    Node * next[10];
+    Node():id(-1){
+        for(int i = 0; i < 10; ++i)
+            next[i] = NULL;
     }
-
-    BigInteger operator=(long long num){
-        s.clear();
-        do{
-            s.push_back(num % BASE);
-            num /= BASE;
-        }while(num > 0);
-        return *this;
-    }
-
-    BigInteger operator=(const string& str){
-        s.clear();
-        int x, len = (str.length()-1)/WIDTH + 1;
-        for(int i=0; i<len; i++){
-            int end = str.length() - i*WIDTH;
-            int start = max(0, end-WIDTH);
-            s.push_back(x);
-        }
-        return *this;
-    }
-
-    BigInteger operator+(const BigInteger& b) const {
-        BigInteger c;
-        c.s.clear();
-        for(int i=0, g=0; ; i++){
-            if(g==0 && i>=s.size() && i>b.s.size()) break;
-            int x = g;
-            if(i<s.size()) x+=s[i];
-            if(i<b.s.size()) x+=b.s[i];
-            c.s.push_back(x%BASE);
-            g = x/BASE;
-        }
-        return c;
-    }
-
-    BigInteger operator += (const BigInteger& b){
-        *this = * this + b;
-        return *this;
-    }
-
-    bool operator < (const BigInteger& b) const {
-        if(s.size() != b.s.size()) return s.size()<b.s.size();
-        for(int i=s.size()-1; i>=0; i--)
-            if(s[i] != b.s[i]) return s[i] < b.s[i];
-        return false;
-    }
-
-    bool operator > (const BigInteger& b) const {
-        return b < *this;
-    }
-
-    bool operator == (const BigInteger& b) const {
-        if(s.size() != b.s.size()) return false;
-        for(int i=s.size()-1; i>=0; i--)
-            if(s[i] != b.s[i]) return false;
-        return true;
-    }
-
-    bool first_integer_match(const string& str){
-        int si = 0;
-        for(int i=s.size()-1; i>=0; i--){
-            string ts = to_string(s[i]);
-            for(int j=0; j<ts.size(); j++){
-                if(ts[j] != str[si]) return false;
-                si++;
-                if(si == str.size()) break;
-            }
-            if(si == str.size()) break;
-        }
-        return true;
-    }
-
 };
 
-int search_frist_match(string s){
-    if(s == "1") return 0;
-    BigInteger a0, a1, a2;
-    a0 = 1, a1 = 1;
-    for(int i=2; i<100000; i++){
-        a2 = a0 + a1;
-        if(a2.first_integer_match(s)) return i;
-        a0 = a1, a1 = a2;
+Node * const root = new Node();
+
+void add_node(char *str, int id) {
+    Node * u = root;
+    for(int i = 0, len = strlen(str); i < len && i <= 40; ++i){
+        int v = str[i] - '0';
+        if(!u->next[v])
+            u->next[v] = new Node();
+        u =  u->next[v];
+        if(u->id == -1) u->id = id;
     }
-    return -1;
 }
 
+int query(char *str) {
+    Node * u = root;
+    for(size_t i = 0, len = strlen(str); i < len; ++i){
+        u = u->next[str[i]-'0'];
+        if(!u) return -1;
+    }
+    return u->id;
+}
+
+void init() {
+    memset(F, 0, sizeof(F));
+    F[0][0] = F[1][0] = 1;
+    int s = 0, e = 1;
+    add_node((char *)"1", 0);
+    add_node((char *)"1", 1);
+    for(int i = 2; i < max_f; ++i){
+        int p = i%2, q = (i+1)%2;
+        // 滚动计算，F[0]或F[1]均为一个Fib数
+        for(int j = s; j < e; ++j) F[p][j] += F[q][j];
+        for(int j = s; j < e; ++j)
+            if(F[p][j]>=10){
+                 F[p][j] %= 10;
+                 F[p][j+1] += 1;
+            }
+        if(F[p][e]) ++e;
+        if(e - s > 50) ++s;
+        int r = e - 1, cnt = 0;
+        memset(Fib, 0, sizeof(Fib));
+        while(r >= 0 && cnt<45) Fib[cnt++] = F[p][r--] + '0';
+        add_node(Fib, i);
+    }
+}
 
 int main(){
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    ios::sync_with_stdio(false);
+    // freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
 
     int n;
     cin>>n;
     string s;
+    init();
     for(int i=1; i<=n; i++){
-        cin>>s;
-        int ans = search_frist_match(s);
-        printf("Case #%d: 0\n", ans);
+        cin>>In;
+        int ans = query(In);
+        printf("Case #%d: %d\n", i, ans);
     }
 }
