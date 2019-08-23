@@ -2,46 +2,23 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "g++-6 build active file",
-            "command": "/usr/local/bin/g++-6",
+            "label": "g++ build active file",
+            "command": "/usr/bin/g++",
             "args": [
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/a.out",
+                "--debug"
             ],
             "options": {
                 "cwd": "/usr/local/bin"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
             }
         },
-        {
-            "type": "shell",
-            "label": "cpp build active file",
-            "command": "/usr/bin/cpp",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
-            ],
-            "options": {
-                "cwd": "/usr/bin"
-            }
-        },
-        {
-            "type": "shell",
-            "label": "clang++ build active file",
-            "command": "/usr/bin/clang++",
-            "args": [
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
-            ],
-            "options": {
-                "cwd": "/usr/bin"
-            }
-        }
     ],
     "version": "2.0.0"
 }
