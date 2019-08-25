@@ -1,9 +1,7 @@
 a.out
-a.out.dSYM/*
 cmake-build-debug/
 *.exe
 .idea/
-.vscode/
-*/input.txt
-*/output.txt
 *.out.dSYM/
+input.txt
+output.txt
