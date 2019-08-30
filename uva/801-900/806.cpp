@@ -4,7 +4,7 @@ using namespace std;
 
 vector<int> ans_seq;
 
-void dfs(vector<vector<char>> image, int x, int y, int w, string pre, int idx){
+void dfs(vector<vector<char>> image, int x, int y, int w, string pre){
     bool same = true;
     for(int i=0; i<w; i++){
         for(int j=0; j<w; j++)
@@ -14,7 +14,7 @@ void dfs(vector<vector<char>> image, int x, int y, int w, string pre, int idx){
             }
         if(!same) break;
     }
-    string base5 = to_string(idx) + pre;
+    string base5 = pre;
     if(same){
         if(image[x][y] == '1') {
             int result = 0;
@@ -22,27 +22,37 @@ void dfs(vector<vector<char>> image, int x, int y, int w, string pre, int idx){
                 result *= 5;
                 result += base5[i]-'0';
             }
+            // cout<<x<<" "<<y<<" "<<base5<<" "<<result<<endl;
             ans_seq.push_back(result);
         }
     }else{
-        dfs(image, x, y, w/2, base5, 1);
-        dfs(image, x+w/2, y, w/2, base5, 2);
-        dfs(image, x, y+w/2, w/2, base5, 3);
-        dfs(image, x+w/2, y+w/2, w/2, base5, 4);
+        dfs(image, x, y, w/2, to_string(1) + base5);
+        dfs(image, x, y+w/2, w/2, to_string(2) + base5);
+        dfs(image, x+w/2, y, w/2, to_string(3) + base5);
+        dfs(image, x+w/2, y+w/2, w/2, to_string(4) + base5);
     }
 }
 
 void image_to_sequence(vector<vector<char>> image){
     ans_seq.clear();
-    dfs(image, 0, 0, image.size(), "", 1);
+    dfs(image, 0, 0, image.size(), "");
     sort(ans_seq.begin(), ans_seq.end());
 
     if(ans_seq.size()>0){
-        cout<<ans_seq[0];
-        for(int i=1; i<ans_seq.size(); i++) cout<<" "<<ans_seq[i];
-        cout<<endl;
+        int mod12 = ans_seq.size() % 12, div12 = ans_seq.size()/12, t;
+        for(int i=0; i<div12; i++){
+            t = i*12;
+            cout<<ans_seq[t];
+            for(int j=1; j<12; j++) cout<<" "<<ans_seq[t + j];
+            cout<<endl;
+        }
+        if(mod12 != 0){
+            cout<<ans_seq[div12*12];
+            for(int j=1; j<mod12; j++) cout<<" "<<ans_seq[div12*12 + j];
+            cout<<endl;
+        }
     }
-    printf("Total number of black nodes = %d\n\n", (int)ans_seq.size());
+    cout<<"Total number of black nodes = "<<ans_seq.size()<<endl;
 }
 
 void sequence_to_image(int w, vector<int> seq){
@@ -56,18 +66,19 @@ void sequence_to_image(int w, vector<int> seq){
             t /= 5;
         }
         int x=0, y=0, wt=w;
-        for(int j=base5.size()-1; j>=0; j--){
-            if(base5[j] == 2) x += wt/2;
-            else if(base5[j] == 3) y += wt/2;
-            else if(base5[j] == 4) {
+        for(int j=0; j<base5.size(); j++){
+            if(base5[j] == '3') x += wt/2;
+            else if(base5[j] == '2') y += wt/2;
+            else if(base5[j] == '4') {
                 x += wt/2;
                 y += wt/2;
             }
             wt /= 2;
         }
-        for(int xt=x; xt<wt; xt++){
-            for(int yt=y; yt<wt; yt++){
-                image[xt][yt] = '*';
+        // printf("%d %s %d %d %d\n", seq[i], base5.c_str(), x, y, wt);
+        for(int xt=0; xt<wt; xt++){
+            for(int yt=0; yt<wt; yt++){
+                image[x+xt][y+yt] = '*';
             }
         }
     }
@@ -75,17 +86,20 @@ void sequence_to_image(int w, vector<int> seq){
         for(int j=0; j<w; j++) cout<<image[i][j];
         cout<<endl;
     }
-    cout<<endl;
 }
 
 
 int main(){
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    std::ios::sync_with_stdio(false);
+    // freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
 
     int n, t, kase = 1;
+    bool first = true;
     char c;
     while(cin>>n && n!=0){
+        if(first) first = false;
+        else cout<<endl;
         cout<<"Image "<<kase<<endl;
         if(n > 0){
             vector<vector<char>> image;
