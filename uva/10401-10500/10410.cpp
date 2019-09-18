@@ -3,96 +3,110 @@
 #include <thread>
 
 using namespace std;
-using namespace std::this_thread;
-using namespace std::chrono;
+// using namespace std::this_thread;
+// using namespace std::chrono;
 
-map<int, vector<int>> children_map;
-
-void search(deque<int>&bfs, deque<int>&dfs){
-    int parent = bfs.front(); bfs.pop_front(); dfs.pop_front();
-
-    sleep_until(system_clock::now() + milliseconds(100));
-
-    while(bfs.size() > 0){
-
-        deque<int> left_dfs, left_bfs;
-        set<int> nodes;
-
-        cout<<"------"<<endl;
-        cout<<"bfs :";
-        for(auto const & p : bfs) cout<<" "<<p;
-        cout<<endl;
-
-        int left_root = bfs.front();
-        bfs.pop_front(); dfs.pop_front();
-        if(children_map.find(parent) == children_map.end())
-            children_map[parent] = vector<int>();
-        children_map[parent].push_back(left_root);
-
-        if(bfs.size() == 0) break;
-        else if(bfs.size() == 1){
-            left_dfs.push_back(left_root);
-            left_dfs.push_back(dfs.front()); dfs.pop_front();
-            left_bfs.push_back(left_root);
-            left_bfs.push_back(bfs.front()); bfs.pop_front();
-        }else {
-            int brother = bfs.front(); bfs.pop_front();
-            left_dfs.push_back(left_root);
-
-            while(dfs.front() != brother) {
-                left_dfs.push_back(dfs.front());
-                nodes.insert(dfs.front());
-                dfs.pop_front();
-            }
-
-            int bfs_size = bfs.size();
-            bfs.push_back(brother);
-
-            left_bfs.push_back(left_root);
-            for(int i=0; i<bfs_size; i++){
-                int t = bfs.front(); bfs.pop_front();
-                if(nodes.find(t) == nodes.end()){
-                    bfs.push_back(t);
-                }else{
-                    left_bfs.push_back(t);
-                }
-            }
-        }
-        // search(left_bfs, left_dfs);
-
-        cout<<"left_bfs:";
-        for(auto const & p : left_bfs) cout<<" "<<p;
-        cout<<endl;
-
-        cout<<"left_dfs:";
-        for(auto const & p : left_dfs) cout<<" "<<p;
-        cout<<endl;
-    }
-}
 
 int main(){
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    // freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
 
     int n_str, t;
-    deque<int> bfs, dfs;
+    vector<int> bfs, dfs;
+    vector<vector<int>> h_tree;
+    map<int, vector<int>> children_map;
     
-    cin>>n_str;
-    for(int i=0; i<n_str; i++){
-        cin>>t;
-        bfs.push_back(t);
-    }
-    for(int i=0; i<n_str; i++){
-        cin>>t;
-        dfs.push_back(t);
-    }
-    search(bfs, dfs);
+    while(cin>>n_str && n_str != 0){
 
-    for(auto const & e : children_map){
-        cout<<e.first<<":";
-        for(int i=0; i<e.second.size(); i++) cout<<" "<<e.second[i];
-        cout<<endl;
+        bfs.clear();
+        dfs.clear();
+        h_tree.clear();
+        children_map.clear();
+
+        for(int i=0; i<n_str; i++){
+            cin>>t;
+            bfs.push_back(t);
+            children_map[t] = vector<int>();
+        }
+        for(int i=0; i<n_str; i++){
+            cin>>t;
+            dfs.push_back(t);
+        }
+
+        int pbfs = 1, pdfs = 0;
+        vector<int> r;
+        r.push_back(bfs[0]);
+        h_tree.push_back(r);
+        h_tree.push_back(vector<int>());
+
+        while(pbfs < bfs.size()){
+            while(pdfs < dfs.size() && dfs[pdfs] != bfs[pbfs])
+                pdfs ++;
+            if(pdfs == dfs.size()){
+                pdfs = 0;
+                vector<int> r;
+                h_tree.push_back(r);
+                continue;
+            }
+            h_tree.back().push_back(bfs[pbfs]);
+            pbfs++;
+        }
+
+        // cout<<"depth: "<<endl;
+        // for(auto const & pl : h_tree) {
+        //     for(auto const & p : pl) cout<<" "<<p;
+        //     cout<<endl;
+        // }
+        // cout<<"====="<<endl;
+        
+        for(int i=0; i<h_tree.size()-1; i++){
+            int p1 = 0, p2 = 0, p3 = 0;
+            for(p1 = 0; p1 < h_tree[i].size()-1; p1++){
+                int bro = p1 + 1;
+                
+                for(; p2 < h_tree[i+1].size(); p2++){
+                    bool search_end = false;
+                    for(; p3 < dfs.size(); p3++) {
+                        // cout<<p1<<" "<<p2<<" "<<p3<<endl;
+                        if(dfs[p3] == h_tree[i][bro]){
+                            search_end = true;
+                            break;
+                        }
+                        if(dfs[p3] == h_tree[i+1][p2]){
+                            children_map[h_tree[i][p1]].push_back(h_tree[i+1][p2]);
+                            break;
+                        }
+                    }
+                    if(search_end) break;
+                }
+            }
+            for(; p2 < h_tree[i+1].size(); p2++){
+                for(; p3 < dfs.size(); p3++) {
+                    // cout<<p1<<" "<<p2<<" "<<p3<<endl;
+                    if(dfs[p3] == h_tree[i+1][p2]){
+                        children_map[h_tree[i][p1]].push_back(h_tree[i+1][p2]);
+                        break;
+                    }
+                }
+            }
+
+            // for(auto const & e : children_map){
+            //     cout<<e.first<<":";
+            //     for(int i=0; i<e.second.size(); i++) cout<<" "<<e.second[i];
+            //     cout<<endl;
+            // }
+            // cout<<"-----"<<endl;
+        }
+
+        for(auto const & e : children_map){
+            cout<<e.first<<":";
+            for(int i=0; i<e.second.size(); i++) cout<<" "<<e.second[i];
+            cout<<endl;
+        }
+
     }
+
+    
 }
 
 /*
