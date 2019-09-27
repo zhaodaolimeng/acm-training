@@ -1,51 +1,74 @@
 #include <bits/stdc++.h>
-// #include <chrono>
-// #include <thread>
+#include <chrono>
+#include <thread>
 
 using namespace std;
-//using namespace std::this_thread;
-//using namespace std::chrono;
-//sleep_until(system_clock::now() + milliseconds(10));
+using namespace std::this_thread;
+using namespace std::chrono;
 
 const int nan_ = (1<<30);
 
 vector<vector<int>> cells;
 map<string, string> idx_to_expr;
-set<string> hit;
+map<string, int> idx_to_val;
+set<string> vis;
 
 int evaluate_expr(string idx_str){
-    if(hit.find(idx_str) == hit.end()) hit.insert(idx_str);
-    else return nan_;
+    // sleep_until(system_clock::now() + milliseconds(100));
+    // cout<<"====="<<endl;
+    // cout<<idx_str<<endl;
     
+    if(idx_to_expr.find(idx_str) != idx_to_expr.end()) {
+        if(vis.find(idx_str) != vis.end()){
+            idx_to_val[idx_str] = nan_;
+            return nan_;
+        }
+        vis.insert(idx_str);
+    } else
+        return cells[idx_str[0]-'A'][idx_str[1]-'0'];
+
+    string expr = idx_to_expr[idx_str];
     int ans = 0;
     string cur_idx = "";
     int cur_d = 0;
     bool cur_is_ref = false;
+    int sym_before = 1;
 
-    for(int p=0; p<=idx_str.size(); p++){
-        if(p == idx_str.size() || idx_str[p] == '+' || idx_str[p] == '-'){
+    for(int p=0; p<=expr.size(); p++){
+        if(p == expr.size() || expr[p] == '+' || expr[p] == '-'){
             if(cur_is_ref){
                 int t = evaluate_expr(cur_idx);
-                if(t == nan_) return nan_;
-                else ans += t;
-                cur_idx = "";
-            }else{
-                ans += cur_d;
-                cur_d = 0;
+                if(t == nan_) {
+                    idx_to_val[idx_str] = nan_;
+                    return nan_;
+                }
+                ans += t*sym_before;
+            }else
+                ans += cur_d*sym_before;
+            
+            if(p != expr.size()){
+                if(expr[p] == '+') sym_before = 1;
+                else sym_before = -1;
             }
+            cur_d = 0;
+            cur_idx = "";
             cur_is_ref = false;
-        }else if(idx_str[p] >= 'A' && idx_str[p] <= 'Z'){
+        }else if(expr[p] >= 'A' && expr[p] <= 'Z'){
             cur_is_ref = true;
-            cur_idx += idx_str[p];
+            cur_idx += expr[p];
         }else{
             if(cur_is_ref){
-                cur_idx += idx_str[p];
+                cur_idx += expr[p];
             }else {
                 cur_d *= 10;
-                cur_d += idx_str[p] - '0';
+                cur_d += expr[p] - '0';
             }
         }
     }
+
+    // cout<<idx_str<<": "<<idx_to_expr[idx_str]<<"="<<ans<<endl;
+    cells[idx_str[0]-'A'][idx_str[1]-'0'] = ans;
+    idx_to_val[idx_str] = ans;
     return ans;
 }
 
@@ -55,11 +78,17 @@ int main(){
 
     int R, C;
     string line;
+    bool first_line = true;
 
     while(cin>>R>>C && R != 0){
+
+        if(!first_line) cout<<endl;
+        first_line = false;
+
         cells.clear();
         idx_to_expr.clear();
-        hit.clear();
+        idx_to_val.clear();
+        vis.clear();
         for(int i=0; i<R; i++) cells.push_back(vector<int>(C));
 
         for(int r=0; r<R; r++){
@@ -89,21 +118,22 @@ int main(){
             }
         }
 
-        cout<<"**********"<<endl;
         for(const auto &entry : idx_to_expr)
-            cout<<entry.first<<" "<<entry.second<<endl;
-
-        for(const auto &entry : idx_to_expr)
-            if(hit.find(entry.first) == hit.end())
+            if(vis.find(entry.first) == vis.end())
                 evaluate_expr(entry.first);
         
         bool isall = true;
-        for(const auto & entry : idx_to_expr){
-            if(hit.find(entry.first) == hit.end()){
+        for(const auto &entry : idx_to_val){
+            if(entry.second == nan_) {
                 isall = false;
                 break;
             }
         }
+
+        // cout<<"-----"<<endl;
+        // for(const auto& entry : idx_to_val)
+        //     cout<<entry.first<<": "<<entry.second<<endl;
+        // cout<<"-----"<<endl;
 
         if(isall){
             cout<<" ";
@@ -119,11 +149,10 @@ int main(){
                 cout<<endl;
             }
         }else{
-            for(const auto & entry : idx_to_expr){
-                if(hit.find(entry.first) == hit.end())
-                    cout<<entry.first<<": "<<entry.second<<endl;
+            for(const auto& entry : idx_to_val){
+                if(entry.second == nan_)
+                    cout<<entry.first<<": "<<idx_to_expr[entry.first]<<endl;
             }
         }
-        cout<<endl;
     }
 }
