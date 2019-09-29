@@ -17,10 +17,16 @@ int evaluate_expr(string idx_str){
     // sleep_until(system_clock::now() + milliseconds(100));
     // cout<<"====="<<endl;
     // cout<<idx_str<<endl;
+    // cout<<"+++++"<<endl;
+    // for(const auto& p : idx_to_val) cout<<p.first<<" "<<p.second<<endl;
+    // cout<<"-----"<<endl;
     
     if(idx_to_expr.find(idx_str) != idx_to_expr.end()) {
         if(vis.find(idx_str) != vis.end()){
+            if(idx_to_val.find(idx_str) != idx_to_val.end() && idx_to_val[idx_str] != nan_)
+                return idx_to_val[idx_str];
             idx_to_val[idx_str] = nan_;
+            // cout<<idx_str<<": "<<idx_to_expr[idx_str]<<"="<<nan_<<endl;
             return nan_;
         }
         vis.insert(idx_str);
@@ -65,7 +71,6 @@ int evaluate_expr(string idx_str){
             }
         }
     }
-
     // cout<<idx_str<<": "<<idx_to_expr[idx_str]<<"="<<ans<<endl;
     cells[idx_str[0]-'A'][idx_str[1]-'0'] = ans;
     idx_to_val[idx_str] = ans;
@@ -73,18 +78,13 @@ int evaluate_expr(string idx_str){
 }
 
 int main(){
-    freopen("input.txt", "r", stdin);
-    freopen("output.txt", "w", stdout);
+    // freopen("input.txt", "r", stdin);
+    // freopen("output.txt", "w", stdout);
 
     int R, C;
     string line;
-    bool first_line = true;
 
     while(cin>>R>>C && R != 0){
-
-        if(!first_line) cout<<endl;
-        first_line = false;
-
         cells.clear();
         idx_to_expr.clear();
         idx_to_val.clear();
@@ -95,13 +95,17 @@ int main(){
             for(int c=0; c<C; c++){
                 cin>>line;
                 bool contains_exp = false;
+                int sym_cnt = 0;
                 for(char ch : line){
                     if(ch >= 'A' && ch <= 'T'){
                         contains_exp = true;
                         break;
+                    } else if(ch == '+' || ch == '-'){
+                        sym_cnt++;
+                        if(sym_cnt == 2) break;
                     }
                 }
-                if(contains_exp){
+                if(contains_exp || sym_cnt == 2){
                     string idx(1, (char)('A' + r));
                     idx += to_string(c);
                     idx_to_expr[idx] = line;
@@ -119,8 +123,12 @@ int main(){
         }
 
         for(const auto &entry : idx_to_expr)
-            if(vis.find(entry.first) == vis.end())
+            if(vis.find(entry.first) == vis.end()){
                 evaluate_expr(entry.first);
+                // cout<<"+++++"<<endl;
+                // for(const auto& p : idx_to_val) cout<<p.first<<" "<<p.second<<endl;
+                // cout<<"-----"<<endl;
+            }
         
         bool isall = true;
         for(const auto &entry : idx_to_val){
@@ -154,5 +162,6 @@ int main(){
                     cout<<entry.first<<": "<<idx_to_expr[entry.first]<<endl;
             }
         }
+        cout<<endl;
     }
 }
