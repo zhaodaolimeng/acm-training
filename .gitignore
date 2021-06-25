@@ -2,6 +2,9 @@ a.out
 cmake-build-debug/
 *.exe
 .idea/
+build/
 *.out.dSYM/
 input.txt
 output.txt
+main
+.vscode/
