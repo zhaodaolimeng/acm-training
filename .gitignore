@@ -8,3 +8,4 @@ input.txt
 output.txt
 main
 .vscode/
+.vscode/c_cpp_properties.json
