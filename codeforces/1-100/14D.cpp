@@ -3,7 +3,7 @@
 using namespace std;
 
 const int MAX = 210;
-int n,t,best_depth,best_path;
+int n,best_depth,best_path;
 int u[MAX],v[MAX];
 vector<int> tree[MAX];
 
@@ -15,9 +15,9 @@ vector<int> tree[MAX];
 
 int dfs(int cur, int pre, int depth){
     int best_depth = depth;
-    for(int i=0;i<n;i++){
+    for(int i=0;i<tree[cur].size();i++){
         if(tree[cur][i] == pre) continue;
-        t = dfs(tree[cur][i],cur,depth+1);
+        int t = dfs(tree[cur][i],cur,depth+1);
         best_path = max(best_path,best_depth+t-2*depth);
         best_depth = max(best_depth,t);
     }
@@ -37,11 +37,11 @@ int main(){
 
         best_path = 0;
         dfs(u[i],v[i],1);
-        t = best_path;
+        int best_path_left = best_path;
 
         best_path = 0;
         dfs(v[i],u[i],1);
-        ret = max(ret, best_path*t);
+        ret = max(ret, best_path*best_path_left);
     }
     cout<<ret<<endl;
     return 0;

@@ -2,53 +2,47 @@
 
 using namespace std;
 
+/*
+每次可选择一个序列中的若干个元素进行减半操作
+问最终得到至少k个相同元素需要多少步操作
+
+该问题第一时间考虑是排序之后找到一个k大小的滑窗进行检查，但实际上这种方式是会遗漏的
+问题本质上适合于使用暴力枚举的方式求解
+一种思路是记录所有出现的前缀，以及前缀后还有多少位
+*/
+
+map<int, vector<int>> mv;
+
 int main(){
     // freopen("input.txt", "r", stdin);
     // freopen("output.txt", "w", stdout);
 
-    int n, k, t;
+    int n,k,t,ans = INT_MAX;
     cin>>n>>k;
 
-    vector<string> as;
-    
     for(int i=0; i<n; i++){
         cin>>t;
-        string s;
-        while(t!=0){
-            s = to_string((t&1)) + s;
-            t >>= 1;
+        for(int j=0; t!=0; j++,t>>=1){
+            mv[t].push_back(j);
         }
-        as.push_back(s);
     }
 
-    sort(as.begin(), as.end());
-
-    int ans = (1<<30);
-
-    for(int start=0; start<as.size()-k+1; start++){
-
-        int min_len = (1<<30), min_move = 0;
-        for(int i=start; i<start+k; i++)
-            min_len = min(min_len, (int)as[i].size());
-        for(int i=start; i<start+k; i++)
-            min_move += as[i].size() - min_len;
-
-        // cout<<min_move<<" "<<min_len<<endl;
-        int p;
-        for(p=0; p<min_len; p++){
-            bool same = true;
-            for(int i=start+1; i<start+k; i++){
-                if(as[i][p] != as[start][p]) {
-                    same = false;
-                    break;
-                }
-            }
-            if(!same) break;
+    // for(auto& p : mv){
+    //     cout<<p.first<<":"<<endl;
+    //     for(auto & pi : p.second) {
+    //         cout<<pi<<" ";
+    //     }
+    //     cout<<endl;
+    // }
+    
+    for(auto& p : mv){
+        if(p.second.size() >= k){
+            sort(p.second.begin(),p.second.end());
+            t = 0;
+            for(int i=0;i<k;i++) t += p.second[i];
+            ans = min(ans, t);
         }
-        min_move += (min_len - p) * k;
-
-        // cout<<start<<" "<<min_move<<endl;
-        ans = min(ans, min_move);
     }
+
     cout<<ans<<endl;
 }
