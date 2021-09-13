@@ -7,11 +7,10 @@
             ],
             "defines": [],
             "macFrameworkPath": [],
-            "compilerPath": "/usr/bin/g++",
+            "compilerPath": "/usr/bin/clang++",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "intelliSenseMode": "clang-x64",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "intelliSenseMode": "clang-x64"
         }
     ],
     "version": 4
