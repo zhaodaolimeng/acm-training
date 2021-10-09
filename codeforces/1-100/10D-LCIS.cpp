@@ -1,7 +1,8 @@
 /**
  * 10D. LCIS
+ * 
+ * 定义一个序列中删去部分元素得到的序列为原序列的子序列，求两组序列的最大升序子序列
  *
- * 这个答案非常好，但是也很绕：
  * http://codeforces.com/contest/10/submission/7325338
  * http://blog.fly2best.com/algorithm/2013/05/11/longges-common-increasing-subsequence/
  */
@@ -11,7 +12,10 @@ using namespace std;
 
 const int MAXN = 1000;
 
-int A[MAXN], B[MAXN], P[MAXN], F[MAXN], ret[MAXN];
+int A[MAXN], B[MAXN];
+int P[MAXN]; // 公共序列前一位
+int F[MAXN]; // 公共序列长度
+int ret[MAXN];
 int N, M;
 
 int main() {
@@ -20,15 +24,14 @@ int main() {
     cin >> M;
     for (int i = 1; i <= M; ++ i) cin >> B[i];
     for (int i = 1; i <= N; ++ i) {
-        int best = 0;
+        int best = 0; // 存储较小的公共升序序列的尾部元素序号
         for (int j = 1; j <= M; ++ j) {
-            if (A[i] == B[j] && F[best] + 1 > F[j])
-                F[j] = F[best] + 1, P[j] = best;
-            else if (B[j] < A[i] && F[j] > F[best]){
-                // F这个数组保留了每一行中的最大值
-                // best存储了A[i]>B[j]中的B[j]的最大值，这样当A[i]==B[j]时，其实是B[j]>B[j']的一个序列
+            if (A[i] == B[j] && F[best] + 1 > F[j]){
+                F[j] = F[best] + 1;
+                P[j] = best;
+            } else if (B[j] < A[i] && F[j] > F[best]){
+                // best存储了A[i]>B[j]中的B[j]的最大值
                 best = j;
-                // best是为了在这一行获取一个升序序列
             }
             // cout<<F[j]<<"--"<<best<<"\t";
         }
