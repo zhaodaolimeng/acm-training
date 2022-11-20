@@ -2,35 +2,37 @@
 
 using namespace std;
 
+int nxt[100000][26];
+int hit_cnt[100000];
 
-// Trie树
-struct Node{
-    int id;
-    Node * next[10];
-    Node():id(-1){
-        for(int i = 0; i < 10; ++i)
-            next[i] = NULL;
+void insert(string s){
+    int p=0, L=s.size(), t=0;
+    for(int i=0; i<L; i++){
+        char c = s[i]-'a';
+        if(!nxt[p][c]){
+            t += 1;
+            nxt[p][c] = t;
+        }
+        p = nxt[p][c];
     }
-};
-
-Node * const root = new Node();
-
-void add_node(char *str, int id) {
-    Node * u = root;
-    for(int i = 0, len = strlen(str); i < len && i <= 40; ++i){
-        int v = str[i] - '0';
-        if(!u->next[v])
-            u->next[v] = new Node();
-        u =  u->next[v];
-        if(u->id == -1) u->id = id;
-    }
+    hit_cnt[p] = 1;
 }
 
-int query(char *str) {
-    Node * u = root;
-    for(size_t i = 0, len = strlen(str); i < len; ++i){
-        u = u->next[str[i]-'0'];
-        if(!u) return -1;
+int find(string s){
+    int p=0, L=s.size();
+    for(int i=0; i<L; i++){
+        char c = s[i]-'a';
+        if(!nxt[p][c]) return false;
+        p = nxt[p][c];
     }
-    return u->id;
+    return hit_cnt[p];
+}
+
+
+
+int main(){
+    insert("abcabc");
+    cout<<find("abcabc")<<endl;
+    cout<<find("abcab")<<endl;
+    return 0;
 }
