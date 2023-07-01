@@ -90,6 +90,10 @@
         "cuchar": "cpp",
         "memory_resource": "cpp",
         "__functional_base_03": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "__bits": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "variant": "cpp"
     }
 }
